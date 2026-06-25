@@ -408,7 +408,12 @@
 
     function tick(){
       let rem = deadline - Date.now();
-      if(rem < 0) rem = 0;
+      if(rem <= 0){
+        // Vaqt tugadi — yana 30 daqiqadan boshlaymiz.
+        deadline = Date.now() + DURATION;
+        localStorage.setItem(KEY, String(deadline));
+        rem = DURATION;
+      }
       const m = Math.floor(rem / 60000);
       const s = Math.floor((rem % 60000) / 1000);
       out.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
