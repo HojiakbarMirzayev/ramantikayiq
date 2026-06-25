@@ -94,14 +94,14 @@
 
   .price-row{
     display:flex;align-items:baseline;justify-content:center;gap:12px;
-    margin-top:6px;
+    margin-top:6px;flex-wrap:wrap;
   }
   .price-now{
     font-family:'Playfair Display',serif;
     font-weight:700;font-size:34px;color:var(--rose);
-    letter-spacing:-.5px;
+    letter-spacing:-.5px;white-space:nowrap;
   }
-  .price-old{font-size:17px;color:#b9a797;text-decoration:line-through;}
+  .price-old{font-size:17px;color:#b9a797;text-decoration:line-through;white-space:nowrap;}
   .price-off{
     background:var(--rose);color:#fff;font-weight:800;font-size:12px;
     padding:4px 9px;border-radius:8px;align-self:center;
@@ -252,7 +252,7 @@
       <div class="trust">
         <span class="t"><img class="i3d" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Check%20mark%20button/3D/check_mark_button_3d.png" alt=""> Original mahsulot</span>
         <span class="t"><img class="i3d" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Shield/3D/shield_3d.png" alt=""> 100% Kafolat</span>
-        <span class="t"><img class="i3d" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Package/3D/package_3d.png" alt=""> Pochta orqali yetkazib</span>
+        <span class="t"><img class="i3d" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Package/3D/package_3d.png" alt=""> Tezkor yetkazish</span>
       </div>
 
       <div class="card" style="margin-top:14px;">
@@ -268,7 +268,7 @@
 
           <div class="field">
             <label for="phone">Telefon raqamingiz</label>
-            <input type="tel" id="phone" name="phone" placeholder="+998 90 123 45 67" inputmode="tel" required />
+            <input type="tel" id="phone" name="phone" value="+998 " placeholder="+998 90 123 45 67" inputmode="numeric" required />
           </div>
 
           <div class="field">
@@ -316,15 +316,36 @@
   const btn = form.querySelector('.submit');
   const btnText = btn.textContent;
 
+  // ===== Telefon: +998 prefiksi doim turadi =====
+  const phoneEl = document.getElementById('phone');
+  const PREFIX = "+998 ";
+  function enforcePrefix(){
+    let digits = phoneEl.value.replace(/\D/g, '');     // faqat raqamlar
+    if(digits.startsWith('998')) digits = digits.slice(3);
+    digits = digits.slice(0, 9);                        // 9 ta raqam (90 123 45 67)
+    phoneEl.value = PREFIX + digits;
+  }
+  phoneEl.addEventListener('focus', () => { if(!phoneEl.value.startsWith(PREFIX)) phoneEl.value = PREFIX; });
+  phoneEl.addEventListener('input', enforcePrefix);
+  phoneEl.addEventListener('keydown', (e) => {
+    // +998 qismini o'chirib bo'lmasin
+    if((e.key === 'Backspace' || e.key === 'Delete') &&
+       phoneEl.selectionStart <= PREFIX.length &&
+       phoneEl.selectionStart === phoneEl.selectionEnd){
+      e.preventDefault();
+    }
+  });
+
   form.addEventListener('submit', async function(e){
     e.preventDefault();
     const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
+    const phone = phoneEl.value.trim();
     const region = document.getElementById('region').value;
     const website = document.getElementById('website').value; // spam-tuzoq
 
-    if(!name || phone.length < 7 || !region){
-      alert("Iltimos, barcha maydonlarni to'ldiring 🙏");
+    const phoneDigits = phone.replace(/\D/g, ''); // 998 + 9 = 12 ta bo'lishi kerak
+    if(!name || phoneDigits.length < 12 || !region){
+      alert("Iltimos, barcha maydonlarni to'g'ri to'ldiring 🙏\n(Telefon: +998 dan keyin 9 ta raqam)");
       return;
     }
 
