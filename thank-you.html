@@ -74,9 +74,57 @@
   h1 .i3d{height:1em;width:1em;vertical-align:-.16em;}
   .big .i3d{height:1.1em;width:1.1em;vertical-align:-.2em;}
   .note .i3d{height:1.35em;width:1.35em;vertical-align:-.32em;}
+
+  /* ===== Jonli orqa fon ===== */
+  body::before{
+    content:"";position:fixed;inset:-10%;z-index:-2;
+    background:
+      radial-gradient(38% 32% at 14% 18%, rgba(197,19,43,.12), transparent 70%),
+      radial-gradient(42% 38% at 86% 12%, rgba(199,154,75,.20), transparent 70%),
+      radial-gradient(48% 42% at 82% 86%, rgba(34,158,217,.10), transparent 70%),
+      radial-gradient(44% 40% at 10% 88%, rgba(199,154,75,.16), transparent 70%);
+    animation:aurora 18s ease-in-out infinite alternate;
+  }
+  @keyframes aurora{
+    0%{transform:translate3d(0,0,0) scale(1);}
+    50%{transform:translate3d(2%,-2%,0) scale(1.06);}
+    100%{transform:translate3d(-2%,2%,0) scale(1.03);}
+  }
+  #petals{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+  .petal{
+    position:absolute;top:-60px;will-change:transform;
+    filter:drop-shadow(0 5px 7px rgba(0,0,0,.08));
+    animation-name:fall;animation-timing-function:linear;animation-iteration-count:1;
+  }
+  @keyframes fall{
+    0%{transform:translate3d(0,-60px,0) rotate(0deg);}
+    100%{transform:translate3d(var(--sway,0),112vh,0) rotate(330deg);}
+  }
+
+  /* ===== Telegram tugmasi: nur + kuchli tebranish ===== */
+  .tg-btn{position:relative;z-index:1;animation:tgBeat 1.9s ease-in-out infinite;}
+  .tg-btn::before{
+    content:"";position:absolute;inset:-8px;border-radius:inherit;z-index:-1;
+    background:linear-gradient(135deg,#5ec8f5,#229ED9,#1577a8);
+    filter:blur(18px);opacity:.55;animation:tgGlow 1.9s ease-in-out infinite;
+  }
+  @keyframes tgBeat{
+    0%,100%{transform:scale(1) translateY(0);}
+    50%{transform:scale(1.045) translateY(-2px);}
+  }
+  @keyframes tgGlow{
+    0%,100%{opacity:.45;}
+    50%{opacity:.9;}
+  }
+  .tg-btn:active{animation-play-state:paused;transform:scale(.97);}
+
+  @media (prefers-reduced-motion: reduce){
+    body::before,.tg-btn,.tg-btn::before,.pulse-wrap::before{animation:none;}
+  }
 </style>
 </head>
 <body>
+  <div id="petals" aria-hidden="true"></div>
   <div class="wrap">
     <div class="check">
       <svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg>
@@ -113,6 +161,34 @@
 <script>
   const p = new URLSearchParams(location.search).get('name');
   if(p){ document.getElementById('uname').textContent = p; }
+
+  // Tushib turuvchi gul barglari
+  (function(){
+    const layer = document.getElementById('petals');
+    if(!layer || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const imgs = [
+      "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Cherry%20blossom/3D/cherry_blossom_3d.png",
+      "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Rose/3D/rose_3d.png",
+      "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Red%20heart/3D/red_heart_3d.png"
+    ];
+    function spawn(){
+      if(document.hidden) return;
+      const el = document.createElement('img');
+      el.className = 'petal';
+      el.src = imgs[Math.floor(Math.random()*imgs.length)];
+      const size = 16 + Math.random()*22;
+      const dur = 7 + Math.random()*7;
+      el.style.width = size + 'px';
+      el.style.left = (Math.random()*100) + 'vw';
+      el.style.animationDuration = dur + 's';
+      el.style.opacity = (0.22 + Math.random()*0.3).toFixed(2);
+      el.style.setProperty('--sway', (Math.random()*80 - 40) + 'px');
+      layer.appendChild(el);
+      setTimeout(() => el.remove(), dur*1000 + 600);
+    }
+    for(let i=0;i<6;i++) setTimeout(spawn, i*800);
+    setInterval(spawn, 1600);
+  })();
 </script>
 </body>
 </html>
