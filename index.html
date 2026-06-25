@@ -268,7 +268,7 @@
 
           <div class="field">
             <label for="phone">Telefon raqamingiz</label>
-            <input type="tel" id="phone" name="phone" value="+998 " placeholder="+998 90 123 45 67" inputmode="numeric" required />
+            <input type="tel" id="phone" name="phone" value="+998" placeholder="+998901234567" inputmode="numeric" required />
           </div>
 
           <div class="field">
@@ -318,7 +318,7 @@
 
   // ===== Telefon: +998 prefiksi doim turadi =====
   const phoneEl = document.getElementById('phone');
-  const PREFIX = "+998 ";
+  const PREFIX = "+998";
   function enforcePrefix(){
     let digits = phoneEl.value.replace(/\D/g, '');     // faqat raqamlar
     if(digits.startsWith('998')) digits = digits.slice(3);
