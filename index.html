@@ -156,7 +156,7 @@
   }
 
   /* ===== FORMA ===== */
-  .form-sec{padding:18px 0 38px;}
+  .form-sec{padding:18px 0 18px;}
   .card{
     background:#fff;border-radius:24px;padding:24px 20px 26px;
     box-shadow:var(--shadow);border:1px solid #f1e2d2;
@@ -256,10 +256,41 @@
   @media (prefers-reduced-motion: reduce){
     body::before,body::after,.orb,.cta,.submit,.cta::before,.submit::before{animation:none;}
   }
+
+  /* ===== Shoshilinch banner + timer ===== */
+  #urgentBar{
+    position:fixed;top:0;left:0;right:0;z-index:60;
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    background:linear-gradient(135deg,#e0314a,#9c0d20);
+    color:#fff;font-weight:700;font-size:13.5px;letter-spacing:.2px;
+    padding:10px 14px;text-align:center;
+    box-shadow:0 8px 26px rgba(156,13,32,.42);
+    transform:translateY(-120%);
+    transition:transform .55s cubic-bezier(.2,.85,.25,1);
+  }
+  #urgentBar.show{transform:translateY(0);}
+  #urgentBar img{width:19px;height:19px;flex:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));}
+  #urgentBar b{font-weight:800;}
+  #urgentBar .ub-timer{
+    background:rgba(255,255,255,.20);
+    padding:3px 10px;border-radius:9px;
+    font-weight:800;font-variant-numeric:tabular-nums;
+    min-width:62px;text-align:center;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
+    animation:ubBlink 1s steps(1) infinite;
+  }
+  @keyframes ubBlink{50%{background:rgba(255,255,255,.34);}}
 </style>
 </head>
 <body>
   <div id="orbs" aria-hidden="true"><span class="orb a"></span><span class="orb b"></span><span class="orb c"></span></div>
+
+  <!-- Shoshilinch banner (formaga yetganda chiqadi) -->
+  <div id="urgentBar" aria-live="polite">
+    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Fire/3D/fire_3d.png" alt="" />
+    <span>Shoshiling! Omborda <b>17 ta</b> qoldi</span>
+    <span class="ub-timer" id="ubTimer">30:00</span>
+  </div>
 
   <!-- HERO -->
   <section class="hero">
@@ -360,14 +391,58 @@
           <div class="addr"><img class="i3d" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Round%20pushpin/3D/round_pushpin_3d.png" alt=""> Toshkent shahar, Index bozori, C1141-do'kon</div>
         </div>
       </div>
-
-      <footer>
-        © 2026 Sevgi Ayiqchasi
-      </footer>
     </div>
   </section>
 
 <script>
+  // ===== Shoshilinch banner + 30 daqiqalik teskari timer =====
+  (function(){
+    const bar = document.getElementById('urgentBar');
+    const out = document.getElementById('ubTimer');
+    const formSec = document.getElementById('buyurtma');
+    if(!bar || !out || !formSec) return;
+
+    const DURATION = 30 * 60 * 1000; // 30 daqiqa
+    const KEY = 'ayiqcha_deadline';
+    let deadline = parseInt(localStorage.getItem(KEY) || '0', 10);
+
+    function tick(){
+      let rem = deadline - Date.now();
+      if(rem < 0) rem = 0;
+      const m = Math.floor(rem / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      out.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+
+    let started = false;
+    function show(){
+      if(started) return;
+      started = true;
+      // Agar timer hali boshlanmagan yoki tugagan bo'lsa — yangidan 30 daqiqa.
+      if(!deadline || deadline < Date.now()){
+        deadline = Date.now() + DURATION;
+        localStorage.setItem(KEY, String(deadline));
+      }
+      tick();
+      bar.classList.add('show');
+      setInterval(tick, 1000);
+    }
+
+    if('IntersectionObserver' in window){
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { if(e.isIntersecting) show(); });
+      }, { threshold: 0.15 });
+      io.observe(formSec);
+    } else {
+      // Eski brauzer uchun zaxira: skroll orqali tekshirish.
+      window.addEventListener('scroll', function chk(){
+        if(formSec.getBoundingClientRect().top < window.innerHeight * 0.85){
+          show(); window.removeEventListener('scroll', chk);
+        }
+      });
+    }
+  })();
+
   // Buyurtma o'z saytimizning maxfiy API'siga yuboriladi (Vercel function).
   const ORDER_ENDPOINT = "/api/order";
 
